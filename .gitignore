@@ -13,6 +13,9 @@ dist/
 *.env
 .env.local
 
+# Temporary tunnel links
+*.txt
+
 # Logs
 npm-debug.log*
 yarn-debug.log*
