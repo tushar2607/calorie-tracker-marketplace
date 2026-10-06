@@ -33,7 +33,7 @@ export default function Marketplace() {
         '🧘 Posture & Core Stability Correction',
         '✨ Personalized Lifestyle Transformation'
       ],
-      price: '$40/hr',
+      price: '₹1,499/hr',
       contactNumber: '7986303704'
     },
     {
@@ -58,7 +58,7 @@ export default function Marketplace() {
         '🥗 Custom Diet Architecture',
         '🤝 1-on-1 Personal Mentorship'
       ],
-      price: '$45/hr',
+      price: '₹1,499/hr',
       contactNumber: '7888737064'
     },
     {
@@ -69,7 +69,7 @@ export default function Marketplace() {
       reviews: 128,
       image: '/trainer_profile.png',
       specialties: ['Weight Loss', 'Muscle Building', 'Nutrition Plans'],
-      price: '$50/hr'
+      price: '₹1,299/hr'
     },
     {
       id: 2,
@@ -79,7 +79,7 @@ export default function Marketplace() {
       reviews: 94,
       image: 'https://images.unsplash.com/photo-1594824424683-eb71887e35b0?w=400&q=80',
       specialties: ['Vegan Diets', 'Gut Health', 'Meal Planning'],
-      price: '$45/hr'
+      price: '₹1,199/hr'
     }
   ];
 
@@ -88,8 +88,8 @@ export default function Marketplace() {
       id: 101,
       title: 'NutriGen 100% Whey Iso-Protein',
       tagline: '25g Pure Isolate Protein • 0g Sugar • Fast Recovery',
-      price: '$49.99',
-      unitPrice: 49.99,
+      price: '₹3,999',
+      unitPrice: 3999,
       rating: 4.9,
       image: 'https://images.unsplash.com/photo-1579722821273-0f6c7d44362f?w=400&q=80',
       badge: '🏆 BEST SELLER',
@@ -100,8 +100,8 @@ export default function Marketplace() {
       id: 102,
       title: 'Ekamjyot Signature All-Natural Peanut Butter',
       tagline: '100% Roasted Peanuts • Zero Palm Oil • 30g Protein/100g',
-      price: '$14.99',
-      unitPrice: 14.99,
+      price: '₹499',
+      unitPrice: 499,
       rating: 5.0,
       image: 'https://images.unsplash.com/photo-1589301760014-d929f3979dbc?w=400&q=80',
       badge: '⭐ EKAM\'S PICK',
@@ -112,8 +112,8 @@ export default function Marketplace() {
       id: 103,
       title: 'Tushar Mass Gainer Pro (Complex Carbs)',
       tagline: '1250 kcal/Serving • Creatine Enriched • Maximum Mass',
-      price: '$39.99',
-      unitPrice: 39.99,
+      price: '₹2,799',
+      unitPrice: 2799,
       rating: 4.9,
       image: 'https://images.unsplash.com/photo-1593095948071-474c5cc2989d?w=400&q=80',
       badge: '🔥 TOP GAINER',
@@ -124,8 +124,8 @@ export default function Marketplace() {
       id: 104,
       title: 'Organic Rolled Oats & Superseeds Combo',
       tagline: 'High Fiber • Chia & Pumpkin Seeds • Complex Glycogen',
-      price: '$12.99',
-      unitPrice: 12.99,
+      price: '₹399',
+      unitPrice: 399,
       rating: 4.8,
       image: 'https://images.unsplash.com/photo-1517673400267-0251440c45dc?w=400&q=80',
       badge: '🌱 ORGANIC',
@@ -136,8 +136,8 @@ export default function Marketplace() {
       id: 105,
       title: 'Pre-Workout Explosive Energy Matrix',
       tagline: '300mg Caffeine • L-Citrulline Malate • Muscle Pump',
-      price: '$24.99',
-      unitPrice: 24.99,
+      price: '₹1,899',
+      unitPrice: 1899,
       rating: 4.9,
       image: 'https://images.unsplash.com/photo-1546483875-ad9014c88eba?w=400&q=80',
       badge: '⚡ EXPLOSIVE PUMP',
@@ -148,8 +148,8 @@ export default function Marketplace() {
       id: 106,
       title: 'Cold-Pressed Extra Virgin Olive Oil & Ghee',
       tagline: '100% Pure Healthy Fats • Ideal for Clean Fitness Cooking',
-      price: '$19.99',
-      unitPrice: 19.99,
+      price: '₹899',
+      unitPrice: 899,
       rating: 4.8,
       image: 'https://images.unsplash.com/photo-1474979266404-7eaacbcd87c5?w=400&q=80',
       badge: '🥑 HEALTHY FATS',
@@ -165,7 +165,7 @@ export default function Marketplace() {
       creator: 'Ekamjyot Singh',
       calories: '2500 kcal/day',
       image: '/food_healthy.png',
-      price: '$29.99'
+      price: '₹999'
     },
     {
       id: 2,
@@ -173,7 +173,7 @@ export default function Marketplace() {
       creator: 'Sarah Jenkins',
       calories: '1800 kcal/day',
       image: 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=400&q=80',
-      price: '$24.99'
+      price: '₹799'
     }
   ];
 
@@ -181,8 +181,8 @@ export default function Marketplace() {
     e.preventDefault();
     if (!selectedProduct) return;
 
-    const totalCost = (selectedProduct.unitPrice * orderQuantity).toFixed(2);
-    setOrderSuccess(`🎉 Order Placed! ${orderQuantity}x "${selectedProduct.title}" (Total: $${totalCost}) will be delivered soon!`);
+    const totalCost = (selectedProduct.unitPrice * orderQuantity).toLocaleString('en-IN');
+    setOrderSuccess(`🎉 Order Placed! ${orderQuantity}x "${selectedProduct.title}" (Total: ₹${totalCost}) will be delivered soon!`);
     setSelectedProduct(null);
     setOrderQuantity(1);
     setAddress('');
@@ -492,7 +492,7 @@ export default function Marketplace() {
               <div className="flex-between" style={{ paddingTop: '0.75rem', borderTop: '1px solid var(--glass-border)' }}>
                 <span>Total Amount:</span>
                 <span style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--primary)' }}>
-                  ${(selectedProduct.unitPrice * orderQuantity).toFixed(2)}
+                  ₹{(selectedProduct.unitPrice * orderQuantity).toLocaleString('en-IN')}
                 </span>
               </div>
 
