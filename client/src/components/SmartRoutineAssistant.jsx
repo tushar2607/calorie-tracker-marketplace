@@ -1,12 +1,19 @@
 import React, { useState, useEffect } from 'react';
-import { Droplets, Dumbbell, Utensils, Bell, Plus, CheckCircle2, Zap, Calendar, Clock, AlertCircle } from 'lucide-react';
+import { Droplets, Dumbbell, Utensils, Bell, Plus, CheckCircle2, Zap, Calendar, Clock, ArrowRight, Circle, Check } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { 
+  DEFAULT_WORKOUT_SCHEDULES, 
+  loadWorkoutSchedule, 
+  saveWorkoutSchedule, 
+  calculateWorkoutStats,
+  playWorkoutChime 
+} from '../utils/workoutData';
 
 const WEEKLY_SPLITS = {
   0: { // Sunday
     dayName: 'Sunday',
     bodyPart: 'Rest & Recovery Day',
     workoutName: 'Complete Body Recovery & Mobility',
-    exercises: ['Light Walking (20-30 mins)', 'Full Body Foam Rolling', 'Static Stretching'],
     preWorkoutFuel: {
       timing: 'Throughout the Morning',
       title: 'Nutrient-Dense Whole Food Recovery',
@@ -18,7 +25,6 @@ const WEEKLY_SPLITS = {
     dayName: 'Monday',
     bodyPart: 'Chest & Triceps',
     workoutName: 'Chest Hypertrophy & Tricep Pressing',
-    exercises: ['Incline Barbell Press (4x8-10)', 'Flat Dumbbell Press (3x10)', 'Cable Chest Flyes (3x12)', 'Tricep Pushdowns (4x12)'],
     preWorkoutFuel: {
       timing: '45-60 min before workout',
       title: 'Fast-Acting Carbs + Clean Protein',
@@ -29,8 +35,7 @@ const WEEKLY_SPLITS = {
   2: { // Tuesday
     dayName: 'Tuesday',
     bodyPart: 'Back & Biceps',
-    workoutName: 'Back Thickness & Bicep Peak',
-    exercises: ['Conventional Deadlifts or Lat Pulldowns (4x6-8)', 'Seated Cable Rows (3x10)', 'Barbell Bicep Curls (4x10)', 'Hammer Curls (3x12)'],
+    workoutName: 'Back Thickness & Bicep Peak Volume',
     preWorkoutFuel: {
       timing: '60 min before workout',
       title: 'Complex Carbs + Sustained Sustenance',
@@ -42,7 +47,6 @@ const WEEKLY_SPLITS = {
     dayName: 'Wednesday',
     bodyPart: 'Legs & Lower Body',
     workoutName: 'Quads, Hamstrings & Calves Blast',
-    exercises: ['Barbell Back Squats (4x6-8)', 'Romanian Deadlifts (3x10)', 'Leg Extension & Curl Superset (3x12)', 'Calf Raises (4x15)'],
     preWorkoutFuel: {
       timing: '60-75 min before workout',
       title: 'High Glycogen Fuel & Sodium Support',
@@ -54,7 +58,6 @@ const WEEKLY_SPLITS = {
     dayName: 'Thursday',
     bodyPart: 'Active Recovery & Core',
     workoutName: 'LISS Cardio, Core & Joint Mobility',
-    exercises: ['Incline Treadmill Walk (30 mins)', 'Hanging Leg Raises (3x15)', 'Planks (3x60s)', 'Hip & Shoulder Mobility'],
     preWorkoutFuel: {
       timing: '30 min before cardio',
       title: 'Hydration & Light Antioxidant Snack',
@@ -64,10 +67,8 @@ const WEEKLY_SPLITS = {
   },
   5: { // Friday
     dayName: 'Friday',
-    dayNameShort: 'Fri',
     bodyPart: 'Shoulders & Arms',
     workoutName: 'Deltoid Sculpting & Arm Peak',
-    exercises: ['Overhead Dumbbell Press (4x8-10)', 'Dumbbell Lateral Raises (4x15)', 'Face Pulls (3x15)', 'Preacher Curls & Skullcrushers (3x12)'],
     preWorkoutFuel: {
       timing: '45 min before workout',
       title: 'Nitric Oxide & Pump Matrix',
@@ -79,7 +80,6 @@ const WEEKLY_SPLITS = {
     dayName: 'Saturday',
     bodyPart: 'Full Body Conditioning / Power',
     workoutName: 'Compound Power & Athletic Conditioning',
-    exercises: ['Clean & Press (4x6)', 'Kettlebell Swings (4x15)', 'Pull-ups (4xMax)', 'Dips (4x12)'],
     preWorkoutFuel: {
       timing: '60 min before workout',
       title: 'Balanced Power Energy Ratio',
@@ -102,6 +102,21 @@ const SmartRoutineAssistant = () => {
 
   // Reminder alert state
   const [reminderToast, setReminderToast] = useState('');
+
+  // Live Workout Schedule State
+  const [activeWorkout, setActiveWorkout] = useState(() => loadWorkoutSchedule(dayOfWeek));
+  const [workoutStats, setWorkoutStats] = useState(() => calculateWorkoutStats(activeWorkout));
+
+  // Sync with storage events
+  useEffect(() => {
+    const syncData = () => {
+      const refreshed = loadWorkoutSchedule(dayOfWeek);
+      setActiveWorkout(refreshed);
+      setWorkoutStats(calculateWorkoutStats(refreshed));
+    };
+    window.addEventListener('nutrigen_workout_updated', syncData);
+    return () => window.removeEventListener('nutrigen_workout_updated', syncData);
+  }, [dayOfWeek]);
 
   const addWater = (amount) => {
     setWaterIntake(prev => {
@@ -131,6 +146,40 @@ const SmartRoutineAssistant = () => {
     }
   };
 
+  // Toggle set completion directly on Dashboard
+  const handleToggleSet = (exerciseId, setNumber) => {
+    const updatedExercises = activeWorkout.exercises.map(ex => {
+      if (ex.id !== exerciseId) return ex;
+
+      const updatedSets = ex.sets.map(s => {
+        if (s.setNumber !== setNumber) return s;
+        const nextState = !s.completed;
+        return {
+          ...s,
+          completed: nextState,
+          completedAt: nextState ? new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : null
+        };
+      });
+
+      return { ...ex, sets: updatedSets };
+    });
+
+    const updatedWorkout = { ...activeWorkout, exercises: updatedExercises };
+    setActiveWorkout(updatedWorkout);
+    saveWorkoutSchedule(updatedWorkout, dayOfWeek);
+    setWorkoutStats(calculateWorkoutStats(updatedWorkout));
+
+    const exObj = activeWorkout.exercises.find(e => e.id === exerciseId);
+    const setObj = exObj?.sets.find(s => s.setNumber === setNumber);
+    const wasCompleted = !setObj?.completed;
+
+    if (wasCompleted) {
+      playWorkoutChime('set');
+      setReminderToast(`💪 Set ${setNumber} completed for ${exObj.name}! Rest 60s.`);
+      setTimeout(() => setReminderToast(''), 3500);
+    }
+  };
+
   const waterPercentage = Math.min(100, Math.round((waterIntake / waterGoal) * 100));
 
   return (
@@ -156,8 +205,8 @@ const SmartRoutineAssistant = () => {
         </div>
       )}
 
-      {/* 2-Column Section: Left Hydration, Right Workout & Pre-Workout Fuel */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat( auto-fit, minmax(320px, 1fr) )', gap: '1.5rem' }}>
+      {/* 2-Column Section: Left Hydration, Right Live Workout Schedule Tracker */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat( auto-fit, minmax(340px, 1fr) )', gap: '1.5rem' }}>
         
         {/* Left Card: Hydration Tracker & Automated Water Reminders */}
         <div className="glass-card" style={{ padding: '1.5rem', background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(15, 23, 42, 0.8) 100%)', border: '1px solid rgba(59, 130, 246, 0.3)' }}>
@@ -204,45 +253,128 @@ const SmartRoutineAssistant = () => {
           </div>
         </div>
 
-        {/* Right Card: Today's Body Part Workout & Pre-Workout Fuel */}
-        <div className="glass-card" style={{ padding: '1.5rem', background: 'linear-gradient(135deg, rgba(249, 115, 22, 0.1) 0%, rgba(15, 23, 42, 0.8) 100%)', border: '1px solid rgba(249, 115, 22, 0.3)' }}>
+        {/* Right Card: Live Training Updates & Gym Workout Tracker */}
+        <div className="glass-card" style={{ padding: '1.5rem', background: 'linear-gradient(135deg, rgba(249, 115, 22, 0.12) 0%, rgba(15, 23, 42, 0.85) 100%)', border: '1px solid rgba(249, 115, 22, 0.35)' }}>
           
-          <div className="flex-between" style={{ marginBottom: '0.75rem' }}>
+          <div className="flex-between" style={{ marginBottom: '0.75rem', flexWrap: 'wrap', gap: '0.5rem' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
               <Dumbbell size={24} color="#f97316" />
-              <h3 style={{ margin: 0, fontSize: '1.2rem' }}>Today's Target: <span style={{ color: '#f97316' }}>{todayRoutine.bodyPart}</span></h3>
+              <h3 style={{ margin: 0, fontSize: '1.2rem' }}>
+                Live Workout: <span style={{ color: '#f97316' }}>{todayRoutine.bodyPart}</span>
+              </h3>
             </div>
-            <span style={{ fontSize: '0.8rem', background: 'rgba(249, 115, 22, 0.2)', color: '#f97316', padding: '0.25rem 0.65rem', borderRadius: '50px', fontWeight: 700 }}>
-              {todayRoutine.dayName} Split
-            </span>
+            <Link 
+              to="/workout"
+              style={{
+                fontSize: '0.8rem',
+                background: 'linear-gradient(90deg, #f97316 0%, #ea580c 100%)',
+                color: '#fff',
+                padding: '0.35rem 0.75rem',
+                borderRadius: '50px',
+                fontWeight: 700,
+                textDecoration: 'none',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.3rem',
+                boxShadow: '0 2px 8px rgba(249, 115, 22, 0.4)'
+              }}
+            >
+              ⚡ Gym Mode <ArrowRight size={13} />
+            </Link>
           </div>
 
-          <div style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', marginBottom: '0.75rem', fontWeight: 600 }}>
-            {todayRoutine.workoutName}
-          </div>
-
-          {/* Exercises Chips */}
-          <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap', marginBottom: '1.25rem' }}>
-            {todayRoutine.exercises.map((ex, i) => (
-              <span key={i} style={{ background: 'var(--surface)', fontSize: '0.78rem', padding: '0.25rem 0.6rem', borderRadius: '4px', border: '1px solid var(--glass-border)' }}>
-                {ex}
+          {/* Live Progress Bar on Dashboard */}
+          <div style={{ marginBottom: '1rem' }}>
+            <div className="flex-between" style={{ fontSize: '0.85rem', marginBottom: '0.35rem' }}>
+              <span style={{ color: 'var(--text-secondary)' }}>
+                Sets Progress: <strong style={{ color: '#fff' }}>{workoutStats.completedSets} / {workoutStats.totalSets} Done</strong>
               </span>
-            ))}
+              <span style={{ fontWeight: 800, color: workoutStats.percentage === 100 ? '#22c55e' : '#f97316' }}>
+                {workoutStats.percentage}%
+              </span>
+            </div>
+            <div style={{ width: '100%', height: '8px', background: 'rgba(255, 255, 255, 0.08)', borderRadius: '50px', overflow: 'hidden' }}>
+              <div 
+                style={{ 
+                  width: `${workoutStats.percentage}%`, 
+                  height: '100%', 
+                  background: workoutStats.percentage === 100 ? '#22c55e' : 'linear-gradient(90deg, #f97316 0%, #ea580c 100%)', 
+                  borderRadius: '50px', 
+                  transition: 'width 0.3s ease' 
+                }} 
+              />
+            </div>
+          </div>
+
+          {/* Interactive Exercise List with Set Checkboxes */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem', marginBottom: '1.25rem' }}>
+            {activeWorkout.exercises.slice(0, 4).map((ex) => {
+              const exDone = ex.sets.filter(s => s.completed).length;
+              const isAllDone = ex.sets.length > 0 && exDone === ex.sets.length;
+
+              return (
+                <div 
+                  key={ex.id}
+                  style={{
+                    background: isAllDone ? 'rgba(34, 197, 94, 0.12)' : 'rgba(15, 23, 42, 0.65)',
+                    padding: '0.75rem 0.95rem',
+                    borderRadius: '0.65rem',
+                    border: isAllDone ? '1px solid rgba(34, 197, 94, 0.4)' : '1px solid var(--glass-border)'
+                  }}
+                >
+                  <div className="flex-between" style={{ marginBottom: '0.5rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                      <strong style={{ fontSize: '0.92rem', color: isAllDone ? '#4ade80' : '#fff' }}>
+                        {ex.name}
+                      </strong>
+                      {isAllDone && <CheckCircle2 size={15} color="#22c55e" />}
+                    </div>
+                    <span style={{ fontSize: '0.78rem', color: isAllDone ? '#22c55e' : 'var(--text-secondary)', fontWeight: 600 }}>
+                      {exDone}/{ex.sets.length} Sets
+                    </span>
+                  </div>
+
+                  {/* Interactive Set Pills */}
+                  <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                    {ex.sets.map((s) => (
+                      <button
+                        key={s.setNumber}
+                        onClick={() => handleToggleSet(ex.id, s.setNumber)}
+                        style={{
+                          padding: '0.3rem 0.65rem',
+                          borderRadius: '6px',
+                          fontSize: '0.78rem',
+                          fontWeight: 700,
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '0.35rem',
+                          border: s.completed ? '1px solid #22c55e' : '1px solid var(--glass-border)',
+                          background: s.completed ? 'linear-gradient(90deg, #22c55e 0%, #16a34a 100%)' : 'rgba(255, 255, 255, 0.05)',
+                          color: s.completed ? '#fff' : 'var(--text-secondary)',
+                          transition: 'all 0.15s ease'
+                        }}
+                      >
+                        {s.completed ? <Check size={12} strokeWidth={3} /> : <Circle size={10} />}
+                        Set {s.setNumber} ({s.reps}r @ {s.weight}k)
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
           </div>
 
           {/* Pre-Workout Nutrition & Fuel Box */}
-          <div style={{ background: 'rgba(15, 23, 42, 0.7)', borderLeft: '4px solid #f97316', padding: '0.85rem 1rem', borderRadius: '0 0.5rem 0.5rem 0' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.85rem', fontWeight: 700, color: '#f97316', marginBottom: '0.35rem' }}>
-              <Utensils size={16} /> Pre-Workout Fuel Protocol ({todayRoutine.preWorkoutFuel.timing}):
+          <div style={{ background: 'rgba(15, 23, 42, 0.75)', borderLeft: '4px solid #f97316', padding: '0.75rem 1rem', borderRadius: '0 0.5rem 0.5rem 0' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.82rem', fontWeight: 700, color: '#f97316', marginBottom: '0.25rem' }}>
+              <Utensils size={15} /> Fuel Protocol ({todayRoutine.preWorkoutFuel.timing}):
             </div>
-            <div style={{ fontSize: '0.9rem', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '0.25rem' }}>
+            <div style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-primary)' }}>
               🥑 {todayRoutine.preWorkoutFuel.title}
             </div>
-            <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', lineHeight: '1.4' }}>
+            <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', lineHeight: '1.35', marginTop: '0.2rem' }}>
               {todayRoutine.preWorkoutFuel.foods}
-            </div>
-            <div style={{ fontSize: '0.78rem', color: '#f97316', marginTop: '0.35rem', fontStyle: 'italic' }}>
-              💡 Pro Tip: {todayRoutine.preWorkoutFuel.tip}
             </div>
           </div>
 

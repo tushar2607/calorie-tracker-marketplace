@@ -1,6 +1,6 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, NavLink, Navigate, useNavigate } from 'react-router-dom';
-import { Activity, Apple, LayoutDashboard, Settings, LogOut, Store, Bot, Stethoscope } from 'lucide-react';
+import { Activity, Apple, LayoutDashboard, Settings, LogOut, Store, Bot, Stethoscope, Dumbbell } from 'lucide-react';
 import Dashboard from './pages/Dashboard';
 import FoodDatabase from './pages/FoodDatabase';
 import Marketplace from './pages/Marketplace';
@@ -9,6 +9,7 @@ import Register from './pages/Auth/Register';
 import AICoach from './pages/AICoach';
 import FitnessDiagnostic from './pages/FitnessDiagnostic';
 import SettingsPage from './pages/Settings';
+import LiveWorkoutTracker from './pages/LiveWorkoutTracker';
 import { AuthProvider, useAuth } from './context/AuthContext';
 
 // NavBar Component
@@ -32,6 +33,9 @@ const NavBar = () => {
       <div className="nav-links" style={{ flex: 1 }}>
         <NavLink to="/" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
           <LayoutDashboard size={20} /> Dashboard
+        </NavLink>
+        <NavLink to="/workout" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
+          <Dumbbell size={20} /> Live Workout
         </NavLink>
         <NavLink to="/diagnostic" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
           <Stethoscope size={20} /> Diagnostic Hub
@@ -92,6 +96,7 @@ function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+            <Route path="/workout" element={<ProtectedRoute><LiveWorkoutTracker /></ProtectedRoute>} />
             <Route path="/diagnostic" element={<ProtectedRoute><FitnessDiagnostic /></ProtectedRoute>} />
             <Route path="/foods" element={<ProtectedRoute><FoodDatabase /></ProtectedRoute>} />
             <Route path="/marketplace" element={<ProtectedRoute><Marketplace /></ProtectedRoute>} />
