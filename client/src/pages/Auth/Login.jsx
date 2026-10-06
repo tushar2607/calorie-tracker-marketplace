@@ -70,6 +70,18 @@ export default function Login() {
           <button type="submit" className="btn-primary flex-center" disabled={isLoading} style={{ width: '100%', padding: '1rem', marginTop: '0.5rem' }}>
             {isLoading ? 'Signing In...' : 'Sign In'}
           </button>
+
+          <button 
+            type="button" 
+            onClick={() => { setEmail('demo@nutrigen.com'); setPassword('password123'); }}
+            className="btn" 
+            style={{ width: '100%', padding: '0.75rem', background: 'rgba(59, 130, 246, 0.12)', color: 'var(--accent-primary)', border: '1px solid rgba(59, 130, 246, 0.3)', fontWeight: 600, borderRadius: '8px', cursor: 'pointer' }}>
+            ⚡ Auto-Fill Demo Account
+          </button>
+
+          <div style={{ padding: '0.5rem 0.75rem', background: 'rgba(255, 255, 255, 0.04)', border: '1px solid var(--glass-border)', borderRadius: '6px', fontSize: '0.78rem', color: 'var(--text-secondary)', textAlign: 'center' }}>
+            Demo: <strong style={{ color: '#fff' }}>demo@nutrigen.com</strong> | Password: <strong style={{ color: '#fff' }}>password123</strong>
+          </div>
         </form>
 
         <p style={{ textAlign: 'center', marginTop: '2rem', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
