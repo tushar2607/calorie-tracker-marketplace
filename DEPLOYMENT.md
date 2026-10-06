@@ -7,7 +7,7 @@ This repository contains pre-configured deployment settings for **Vercel** (Fron
 ## Step 1: Push Your Code to GitHub
 
 Your repository is already connected to:
-`https://github.com/Tushar9124/calorie-tracker-marketplace.git`
+`https://github.com/tushar2607/calorie-tracker-marketplace.git`
 
 Commit and push your latest changes:
 ```powershell
@@ -24,7 +24,7 @@ Deploying the backend first gives you your live API URL:
 
 1. Log in to [Render Dashboard](https://dashboard.render.com/).
 2. Click **New +** -> **Web Service**.
-3. Select your repository `Tushar9124/calorie-tracker-marketplace`.
+3. Select your repository `tushar2607/calorie-tracker-marketplace`.
 4. Configure the service settings:
    - **Name**: `calorie-tracker-backend`
    - **Region**: Any (e.g., Singapore or US)
@@ -47,7 +47,7 @@ Deploying the backend first gives you your live API URL:
 ## Step 3: Deploy the Frontend (Vercel)
 
 1. Log in to [Vercel](https://vercel.com/new).
-2. Click **Import** next to `Tushar9124/calorie-tracker-marketplace`.
+2. Click **Import** next to `tushar2607/calorie-tracker-marketplace`.
 3. Configure the project:
    - **Framework Preset**: `Vite`
    - **Root Directory**: Click edit and select `client`
