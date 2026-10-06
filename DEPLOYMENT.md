@@ -4,54 +4,67 @@ This repository contains pre-configured deployment settings for **Vercel** (Fron
 
 ---
 
-## Step 1: Create GitHub Repository & Push Code
+## Step 1: Push Your Code to GitHub
 
-1. Go to [https://github.com/new](https://github.com/new).
-2. Repository Name: `calorie-tracker-marketplace`
-3. Access: **Public**
-4. Click **Create repository** (do NOT add README, .gitignore, or license).
-5. Run the following command in VS Code / PowerShell to push all commits:
-   ```powershell
-   git push -u origin main
-   ```
+Your repository is already connected to:
+`https://github.com/Tushar9124/calorie-tracker-marketplace.git`
 
----
-
-## Step 2: Deploy Frontend on Vercel
-
-1. Go to [https://vercel.com/new](https://vercel.com/new).
-2. Click **Import** next to `Tushar9124/calorie-tracker-marketplace`.
-3. Under **Framework Preset**, choose **Vite**.
-4. Set **Root Directory** to `client`.
-5. Click **Deploy**.
-
-Vercel will build and deploy your live frontend URL (e.g., `https://calorie-tracker-marketplace.vercel.app`).
+Commit and push your latest changes:
+```powershell
+git add .
+git commit -m "Configure production environment and deployment settings"
+git push origin main
+```
 
 ---
 
-## Step 3: Deploy Backend on Render / Railway
+## Step 2: Deploy the Backend (Render)
 
-### Option A: Render (Recommended)
-1. Go to [https://dashboard.render.com/select-repo?type=web](https://dashboard.render.com/select-repo?type=web).
-2. Select `Tushar9124/calorie-tracker-marketplace`.
-3. Configure Service:
+Deploying the backend first gives you your live API URL:
+
+1. Log in to [Render Dashboard](https://dashboard.render.com/).
+2. Click **New +** -> **Web Service**.
+3. Select your repository `Tushar9124/calorie-tracker-marketplace`.
+4. Configure the service settings:
    - **Name**: `calorie-tracker-backend`
+   - **Region**: Any (e.g., Singapore or US)
    - **Root Directory**: `server`
+   - **Runtime**: `Node`
    - **Build Command**: `npm install`
    - **Start Command**: `npm start`
-4. Add Environment Variables:
+5. Under **Environment Variables**, add:
    - `NODE_ENV`: `production`
    - `PORT`: `5000`
-   - `MONGO_URI`: `your_mongodb_atlas_uri`
+   - `MONGO_URI`: `your_mongodb_atlas_uri` *(from server/.env)*
    - `JWT_SECRET`: `your_jwt_secret`
    - `GEMINI_API_KEY`: `your_gemini_api_key`
-5. Click **Create Web Service**.
+6. Click **Deploy Web Service**.
+7. Once deployed, copy your backend URL (e.g. `https://calorie-tracker-backend.onrender.com`).
+   - You can test it by visiting: `https://calorie-tracker-backend.onrender.com/health`
 
 ---
 
-### Option B: Railway
-1. Go to [https://railway.app/new](https://railway.app/new).
-2. Select **Deploy from GitHub repo** -> `Tushar9124/calorie-tracker-marketplace`.
-3. Set Root Directory to `/server`.
-4. Add Environment Variables (`MONGO_URI`, `JWT_SECRET`, `GEMINI_API_KEY`, `PORT=5000`).
+## Step 3: Deploy the Frontend (Vercel)
+
+1. Log in to [Vercel](https://vercel.com/new).
+2. Click **Import** next to `Tushar9124/calorie-tracker-marketplace`.
+3. Configure the project:
+   - **Framework Preset**: `Vite`
+   - **Root Directory**: Click edit and select `client`
+4. Expand **Environment Variables** and add:
+   - `VITE_API_BASE_URL`: `https://calorie-tracker-backend.onrender.com/api`
+   *(Replace with your actual Render backend URL followed by `/api`)*
 5. Click **Deploy**.
+
+Vercel will build and launch your live frontend with automatic HTTPS and global CDN.
+
+---
+
+## Alternative: Free Tunneling for Immediate Live Testing
+
+If you want to share the app right now from your machine without creating cloud accounts:
+```powershell
+# In client terminal:
+npx localtunnel --port 5173
+```
+This gives you an instant temporary public URL to show or test on mobile.
