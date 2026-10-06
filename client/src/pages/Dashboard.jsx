@@ -3,6 +3,7 @@ import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import { Flame, Beef, Wheat, Droplets, Quote, Sparkles, RefreshCw } from 'lucide-react';
 import axios from 'axios';
 import SmartRoutineAssistant from '../components/SmartRoutineAssistant';
+import DietRewardsWidget from '../components/DietRewardsWidget';
 
 const MACRO_COLORS = ['#3b82f6', '#10b981', '#f59e0b']; // Carbs, Protein, Fat
 
@@ -138,6 +139,9 @@ export default function Dashboard() {
 
       {/* Smart Hydration Reminders & Daily Workout Split / Pre-Workout Nutrition */}
       <SmartRoutineAssistant />
+
+      {/* Scheduled Diet On-Time Logging & NutriCoin Rewards Widget */}
+      <DietRewardsWidget />
 
       <div className="grid-cols-4" style={{ marginBottom: '2rem' }}>
         <div className="glass-card flex-center" style={{ flexDirection: 'column', gap: '0.5rem' }}>

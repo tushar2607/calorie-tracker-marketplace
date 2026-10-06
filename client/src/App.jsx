@@ -1,6 +1,6 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, NavLink, Navigate, useNavigate } from 'react-router-dom';
-import { Activity, Apple, LayoutDashboard, Settings, LogOut, Store, Bot, Stethoscope, Dumbbell } from 'lucide-react';
+import { Activity, Apple, LayoutDashboard, Settings, LogOut, Store, Bot, Stethoscope, Dumbbell, Trophy } from 'lucide-react';
 import Dashboard from './pages/Dashboard';
 import FoodDatabase from './pages/FoodDatabase';
 import Marketplace from './pages/Marketplace';
@@ -10,11 +10,14 @@ import AICoach from './pages/AICoach';
 import FitnessDiagnostic from './pages/FitnessDiagnostic';
 import SettingsPage from './pages/Settings';
 import LiveWorkoutTracker from './pages/LiveWorkoutTracker';
+import ChallengesAndRewards from './pages/ChallengesAndRewards';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { RewardsProvider, useRewards } from './context/RewardsContext';
 
 // NavBar Component
 const NavBar = () => {
   const { logout, user } = useAuth();
+  const { coins } = useRewards();
   const navigate = useNavigate();
 
   const handleLogout = () => {
@@ -26,13 +29,21 @@ const NavBar = () => {
 
   return (
     <div className="sidebar">
-      <div className="sidebar-logo">
-        <Apple color="#3b82f6" fill="#3b82f6" />
-        <span className="text-gradient">NutriGen</span>
+      <div className="sidebar-logo flex-between" style={{ paddingRight: '0.5rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <Apple color="#3b82f6" fill="#3b82f6" />
+          <span className="text-gradient">NutriGen</span>
+        </div>
+        <NavLink to="/challenges" style={{ textDecoration: 'none', background: 'rgba(245, 158, 11, 0.18)', border: '1px solid rgba(245, 158, 11, 0.4)', borderRadius: '50px', padding: '0.2rem 0.55rem', color: '#f59e0b', fontSize: '0.75rem', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+          <span>🪙</span> {coins}
+        </NavLink>
       </div>
       <div className="nav-links" style={{ flex: 1 }}>
         <NavLink to="/" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
           <LayoutDashboard size={20} /> Dashboard
+        </NavLink>
+        <NavLink to="/challenges" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
+          <Trophy size={20} /> Diet & Rewards
         </NavLink>
         <NavLink to="/workout" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
           <Dumbbell size={20} /> Live Workout
@@ -90,22 +101,25 @@ const Layout = ({ children }) => {
 function App() {
   return (
     <AuthProvider>
-      <Router>
-        <Layout>
-          <Routes>
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-            <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-            <Route path="/workout" element={<ProtectedRoute><LiveWorkoutTracker /></ProtectedRoute>} />
-            <Route path="/diagnostic" element={<ProtectedRoute><FitnessDiagnostic /></ProtectedRoute>} />
-            <Route path="/foods" element={<ProtectedRoute><FoodDatabase /></ProtectedRoute>} />
-            <Route path="/marketplace" element={<ProtectedRoute><Marketplace /></ProtectedRoute>} />
-            <Route path="/ai-coach" element={<ProtectedRoute><AICoach /></ProtectedRoute>} />
-            <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
-        </Layout>
-      </Router>
+      <RewardsProvider>
+        <Router>
+          <Layout>
+            <Routes>
+              <Route path="/login" element={<Login />} />
+              <Route path="/register" element={<Register />} />
+              <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+              <Route path="/challenges" element={<ProtectedRoute><ChallengesAndRewards /></ProtectedRoute>} />
+              <Route path="/workout" element={<ProtectedRoute><LiveWorkoutTracker /></ProtectedRoute>} />
+              <Route path="/diagnostic" element={<ProtectedRoute><FitnessDiagnostic /></ProtectedRoute>} />
+              <Route path="/foods" element={<ProtectedRoute><FoodDatabase /></ProtectedRoute>} />
+              <Route path="/marketplace" element={<ProtectedRoute><Marketplace /></ProtectedRoute>} />
+              <Route path="/ai-coach" element={<ProtectedRoute><AICoach /></ProtectedRoute>} />
+              <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
+          </Layout>
+        </Router>
+      </RewardsProvider>
     </AuthProvider>
   );
 }
