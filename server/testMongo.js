@@ -4,11 +4,10 @@ const mongoose = require('mongoose');
 console.log("URI IS:", process.env.MONGO_URI);
 
 mongoose.connect(process.env.MONGO_URI, {
-  serverSelectionTimeoutMS: 2000, 
-  family: 4
+  serverSelectionTimeoutMS: 8000
 })
 .then(() => {
-  console.log("✅ Success!");
+  console.log("✅ Success! Connected to MongoDB Atlas database:", mongoose.connection.name);
   process.exit(0);
 })
 .catch(err => {
